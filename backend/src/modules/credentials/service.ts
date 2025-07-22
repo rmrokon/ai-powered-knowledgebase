@@ -6,25 +6,14 @@ import {
   CreateCredential, 
   UpdateCredential, 
   CredentialWithUser,
-  CreateUser,
-  UserWithCredentials,
-  ApiError,
   ICredentialRequestBody,
-  ILoginCredentialRequestBody
+  ILoginCredentialRequestBody,
+  ICredentialTokenPayload
 } from './types';
-
-
-export interface ICredentialTokenPayload {
-  uid: string;
-  user: {
-    id: string;
-    email: string;
-    name?: string;
-  };
-}
+import { IUser } from '../users/types';
 
 export interface ICredentialService {
-  createCredential(args: ICredentialRequestBody): Promise<UserWithCredentials>;
+  createCredential(args: ICredentialRequestBody): Promise<IUser>;
   verifyCredential(args: ILoginCredentialRequestBody): Promise<{
     accessToken: string;
     refreshToken: string;
@@ -47,31 +36,25 @@ export interface ICredentialService {
 
 export class CredentialService implements ICredentialService {
   private credentialRepo: BaseRepository<any, CreateCredential, UpdateCredential>;
-  // private userRepo: BaseRepository<any, CreateUser, any>;
   private db: PrismaClient;
 
   constructor(
     credentialRepo: BaseRepository<any, CreateCredential, UpdateCredential>,
-    // userRepo: BaseRepository<any, CreateUser, any>,
     db: PrismaClient
   ) {
     this.credentialRepo = credentialRepo;
-    // this.userRepo = userRepo;
     this.db = db;
   }
 
-  // Utility method to hash password
   private async hashPassword(password: string): Promise<string> {
     const salt = await bcrypt.genSalt(10);
     return bcrypt.hash(password, salt);
   }
 
-  // Utility method to verify password
   private async verifyPassword(password: string, hash: string): Promise<boolean> {
     return bcrypt.compare(password, hash);
   }
 
-  // Utility method to create JWT tokens
   private async createTokens(args: { 
     payload: ICredentialTokenPayload; 
     secret: string 
@@ -82,30 +65,27 @@ export class CredentialService implements ICredentialService {
       payload, 
       process.env.JWT_SECRET! + secret, 
       {
-        expiresIn: '5m', // 5 minutes
+        expiresIn: '24h',
       }
     );
     
+    //created for later, currently not used
     const refreshToken = jwt.sign(
       { uid: payload.user.id }, 
       process.env.JWT_SECRET! + secret, 
       {
-        expiresIn: '24h', // 24 hours
+        expiresIn: '24h',
       }
     );
 
-    // Store in Redis if you're using it (optional)
-    // await redisClient.setex(payload.user.id, 24 * 60 * 60, JSON.stringify(payload));
-
+    //Will store in redis if get time later
     return { accessToken, refreshToken };
   }
 
-  // Utility method to verify access token
   verifyAccessToken(token: string, secret: string): any {
     return jwt.verify(token, process.env.JWT_SECRET! + secret);
   }
 
-  // Get credential by user ID
   async getCredentialByUserId(userId: string): Promise<CredentialWithUser | null> {
     try {
       const credential = await this.credentialRepo.findFirst(
@@ -118,12 +98,9 @@ export class CredentialService implements ICredentialService {
     }
   }
 
-  // Create new user with credentials
-  async createCredential(body: ICredentialRequestBody): Promise<UserWithCredentials> {
+  async createCredential(body: ICredentialRequestBody): Promise<IUser> {
     try {
-      // Use Prisma transaction
       return await this.db.$transaction(async (tx) => {
-        // Check if user already exists
         const existingUser = await tx.user.findUnique({
           where: { email: body.email }
         });
@@ -132,18 +109,16 @@ export class CredentialService implements ICredentialService {
           throw new Error('User with same email address already exists!');
         }
 
-        // Create user
         const user = await tx.user.create({
           data: {
             email: body.email,
-            // Add other user fields as needed
+            firstName: body?.firstName || '',
+            lastName: body?.lastName || '',
           }
         });
 
-        // Hash password
         const hashedPassword = await this.hashPassword(body.password);
 
-        // Create credential
         await tx.credential.create({
           data: {
             password: hashedPassword,
@@ -151,20 +126,13 @@ export class CredentialService implements ICredentialService {
           }
         });
 
-        // Return user with credentials
-        const userWithCredentials = await tx.user.findUnique({
-          where: { id: user.id },
-          include: { credential: true }
-        });
-
-        return userWithCredentials as UserWithCredentials;
+        return user;
       });
     } catch (error) {
       throw new Error(`Failed to create credential: ${error}`);
     }
   }
 
-  // Verify credentials and login
   async verifyCredential(args: ILoginCredentialRequestBody): Promise<{
     accessToken: string;
     refreshToken: string;
@@ -176,7 +144,6 @@ export class CredentialService implements ICredentialService {
   }> {
     try {
       return await this.db.$transaction(async (tx) => {
-        // Find user with credential
         const user = await tx.user.findUnique({
           where: { email: args.email },
           include: { credential: true }
@@ -186,7 +153,6 @@ export class CredentialService implements ICredentialService {
           throw new Error('User not found!');
         }
 
-        // Verify password
         const isPasswordValid = await this.verifyPassword(
           args.password, 
           user.credential.password
@@ -196,14 +162,14 @@ export class CredentialService implements ICredentialService {
           throw new Error('Invalid credentials');
         }
 
-        // Create tokens
         const tokens = await this.createTokens({
           payload: {
             uid: user.id,
             user: {
               id: user.id,
               email: user.email,
-              name: `${user.firstName} ${user.lastName}` || undefined,
+              firstName: user.firstName,
+              lastName: user.lastName,
             }
           },
           secret: user.credential.password,
@@ -224,7 +190,6 @@ export class CredentialService implements ICredentialService {
     }
   }
 
-  // Refresh tokens
   async refreshCredential(args: Pick<ILoginCredentialRequestBody, 'email'>): Promise<{
     accessToken: string;
     refreshToken: string;
@@ -236,7 +201,6 @@ export class CredentialService implements ICredentialService {
   }> {
     try {
       return await this.db.$transaction(async (tx) => {
-        // Find user with credential
         const user = await tx.user.findUnique({
           where: { email: args.email },
           include: { credential: true }
@@ -246,18 +210,17 @@ export class CredentialService implements ICredentialService {
           throw new Error('User not found!');
         }
 
-        // Get cached data from Redis if using it
-        // const redisRecord = await redisClient.get(user.id);
-        // const parsedData = redisRecord ? JSON.parse(redisRecord) : {};
+        //Will  Get cached data from Redis if using it
 
-        // Create new tokens
+
         const tokens = await this.createTokens({
           payload: {
             uid: user.id,
             user: {
               id: user.id,
               email: user.email,
-              name: `${user.firstName} ${user.lastName}` || undefined,
+              firstName: user.firstName,
+              lastName: user.lastName,
             }
           },
           secret: user.credential.password,
@@ -278,9 +241,7 @@ export class CredentialService implements ICredentialService {
     }
   }
 
-  // Additional utility methods
 
-  // Update password
   async updatePassword(userId: string, newPassword: string): Promise<void> {
     try {
       const hashedPassword = await this.hashPassword(newPassword);
@@ -294,7 +255,6 @@ export class CredentialService implements ICredentialService {
     }
   }
 
-  // Delete credential (for user deletion)
   async deleteCredential(userId: string): Promise<void> {
     try {
       await this.db.$transaction(async (tx) => {
@@ -307,37 +267,4 @@ export class CredentialService implements ICredentialService {
       throw new Error(`Failed to delete credential: ${error}`);
     }
   }
-
-  // Check if user exists by email
-  async userExistsByEmail(email: string): Promise<boolean> {
-    try {
-      const count = await this.userRepo.count({ email });
-      return count > 0;
-    } catch (error) {
-      throw new Error(`Failed to check user existence: ${error}`);
-    }
-  }
-
-  // Get user by email with credentials
-  async getUserByEmailWithCredential(email: string): Promise<UserWithCredentials | null> {
-    try {
-      const user = await this.db.user.findUnique({
-        where: { email },
-        include: { credential: true }
-      });
-      
-      return user as UserWithCredentials | null;
-    } catch (error) {
-      throw new Error(`Failed to get user by email: ${error}`);
-    }
-  }
 }
-
-// Factory function to create the service
-// export const createCredentialService = (
-//   credentialRepo: BaseRepository<any, CreateCredential, UpdateCredential>,
-//   userRepo: BaseRepository<any, CreateUser, any>,
-//   db: PrismaClient
-// ) => {
-//   return new CredentialService(credentialRepo, userRepo, db);
-// };

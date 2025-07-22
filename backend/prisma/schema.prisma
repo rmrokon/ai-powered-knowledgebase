@@ -26,8 +26,8 @@ datasource db {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  firstName String
-  lastName  String
+  firstName String?
+  lastName  String?
   articles  Article[]
   credential Credential?
   createdAt DateTime @default(now())
