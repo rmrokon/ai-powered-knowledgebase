@@ -1,6 +1,6 @@
-import { IAuth } from '@/utils/types/user';
 import { create } from 'zustand';
 import { persist, devtools } from 'zustand/middleware';
+import { IAuth } from '../api/repositories/auth-repository';
 
 interface AuthState {
   isLoggedIn: boolean;
