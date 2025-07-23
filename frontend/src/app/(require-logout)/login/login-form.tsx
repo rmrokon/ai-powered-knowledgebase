@@ -64,7 +64,7 @@ export function LoginForm({
           <Input id="password" type="password" {...register("password")} />
           {!!errors.password && <Error>{errors.password.message}</Error>}
         </div>
-        <Button type="submit" className="w-full" variant={"outline"}>
+        <Button type="submit" className="w-full">
           Login
         </Button>
       </div>

@@ -6,6 +6,7 @@ interface AuthState {
   isLoggedIn: boolean;
   user: IAuth["user"] | null;
   login: (user: IAuth["user"]) => void;
+  logout: () => void;
 }
 
 export const useAuthZstore = create<AuthState>()(
@@ -15,7 +16,8 @@ export const useAuthZstore = create<AuthState>()(
         isLoggedIn: false,
         initializing: true,
         user: null,
-        login: (user) =>set({ isLoggedIn: true, user: user }, false, 'auth/login'),
+        login: (user) => set({ isLoggedIn: true, user: user }, false, 'auth/login'),
+        logout: () => set({ isLoggedIn: false, user: null }, false, 'auth/logout'),
       }),
       {
         name: 'auth-storage', // localStorage key
