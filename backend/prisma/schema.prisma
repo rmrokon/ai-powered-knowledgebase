@@ -45,10 +45,57 @@ model Credential {
 model Article {
   id        String   @id @default(uuid())
   title     String
-  body      String
-  tags      String[]
+  content   Json     // Structured content blocks
+  excerpt   String?
+  slug      String   @unique
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+  assets    Asset[]  // All assets used in this article
+  tags      ArticleTag[]
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Asset {
+  id          String   @id @default(uuid())
+  filename    String
+  originalName String
+  url         String
+  type        AssetType
+  mimeType    String
+  size        Int
+  width       Int?     
+  height      Int?     
+  articleId   String?
+  article     Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  
+  @@index([articleId])
+}
+
+enum AssetType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  AUDIO
+}
+
+model Tag {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  slug        String       @unique
+  description String?
+  color       String?
+  articles    ArticleTag[]
+  createdAt   DateTime     @default(now())
+}
+
+model ArticleTag {
+  articleId String
+  tagId     String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([articleId, tagId])
 }
 
