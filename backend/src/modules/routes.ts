@@ -1,6 +1,7 @@
 import { CredentialRouter } from "./credentials";
-
+import { ArticleRouter } from "./articles";
 
 export const ROUTES = {
-    "/credentials": CredentialRouter
+    "/credentials": CredentialRouter,
+    "/articles": ArticleRouter
 }

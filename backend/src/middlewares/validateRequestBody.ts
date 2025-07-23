@@ -7,6 +7,8 @@ export default function validateRequestBody<T>(schema: z.ZodType<T>) {
       req.body = schema.parse(req.body);
       next();
     } catch (error) {
+        console.log(req.body);
+        console.log(error);
       if (error instanceof ZodError) {
         const errors = error.issues.map((issue) => ({
           path: issue?.path,

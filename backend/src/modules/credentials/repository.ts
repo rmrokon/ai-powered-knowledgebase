@@ -8,7 +8,7 @@ export class CredentialRepository extends BaseRepository<
   UpdateCredential
 > {
   constructor(db: PrismaClient) {
-    super(db, 'user', {
+    super(db, 'credential', {
     })
   }
 }

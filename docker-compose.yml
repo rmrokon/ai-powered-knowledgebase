@@ -11,6 +11,12 @@ services:
       - ./backend/.env
     volumes:
       - pgdata:/var/lib/postgresql/data
+  
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 4000:8080
 
   backend:
     build:
@@ -27,6 +33,7 @@ services:
       # JWT_SECRET: ${JWT_SECRET}
     volumes:
       - ./backend:/app
+      - /app/node_modules
     command: yarn dev
 
 volumes:

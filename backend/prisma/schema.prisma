@@ -31,6 +31,8 @@ model User {
   articles  Article[]
   credential Credential?
   createdAt DateTime @default(now())
+
+  @@map("users")
 }
 
 model Credential {
@@ -40,15 +42,56 @@ model Credential {
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId    String   @unique
+
+  @@map("credentials")
 }
 
+
 model Article {
-  id        String   @id @default(uuid())
-  title     String
-  body      String
-  tags      String[]
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
+  id          String        @id @default(uuid())
+  title       String
+  content     Json          // Rich text content as JSON
+  contentHtml String?       // Cached HTML version for display
+  excerpt     String?       // Plain text excerpt
+  slug        String        @unique
+  status      ArticleStatus @default(DRAFT)
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  tags        ArticleTag[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  publishedAt DateTime?
+  
+  @@map("articles")
+  @@index([userId])
+  @@index([status])
+  @@index([slug])
+}
+
+model Tag {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  slug        String       @unique
+  description String?
+  color       String?
+  articles    ArticleTag[]
+  createdAt   DateTime     @default(now())
+  @@map("tags")
+}
+
+model ArticleTag {
+  articleId String
+  tagId     String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([articleId, tagId])
+  @@map("article_tags")
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }
 
