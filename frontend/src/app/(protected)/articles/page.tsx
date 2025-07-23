@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, Plus, Loader2, FileText } from "lucide-react";
 import Link from "next/link";
 import ArticleCard from "./articles-card";
-import { useGetArticles, useSearchArticles } from "@/components/hooks/api/use-articles";
+import { useGetUserArticles, useSearchUserArticles } from "@/components/hooks/api/use-articles";
 import { useDebouncedSearch } from "@/components/hooks/use-debounced-search";
 
 export default function Articles() {
@@ -19,7 +19,7 @@ export default function Articles() {
     data: articlesData,
     isLoading: isLoadingArticles,
     error: articlesError
-  } = useGetArticles(currentPage, 12, undefined, {
+  } = useGetUserArticles(currentPage, 12, undefined, {
     enabled: !debouncedSearchTerm
   });
 
@@ -27,7 +27,7 @@ export default function Articles() {
     data: searchData,
     isLoading: isSearching,
     error: searchError
-  } = useSearchArticles(debouncedSearchTerm, currentPage, 12, {
+  } = useSearchUserArticles(debouncedSearchTerm, currentPage, 12, {
     enabled: !!debouncedSearchTerm
   });
 
@@ -70,7 +70,7 @@ export default function Articles() {
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground size-4" />
         <Input
-          placeholder="Search articles..."
+          placeholder="Search articles by title, content, or tags..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10 pr-4"

@@ -5,27 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { 
-  ArrowLeft, 
-  Calendar, 
-  User, 
-  Edit, 
-  Trash2, 
-  Share2, 
-  Bookmark,
+import {
+  ArrowLeft,
+  Calendar,
+  User,
+  Trash2,
   Eye,
   Clock,
-  Loader2
+  Loader2,
+  FileText
 } from "lucide-react";
 import Link from "next/link";
 import { useGetArticleBySlug, useDeleteArticle } from "@/components/hooks/api/use-articles";
 import { useState } from "react";
+import { ArticleSummaryModal } from "@/components/ui/article-summary-modal";
 
 export default function ArticleDetails() {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
 
   const { data: article, isLoading, error } = useGetArticleBySlug(slug);
   const deleteArticleMutation = useDeleteArticle({
@@ -121,27 +121,21 @@ export default function ArticleDetails() {
         </Button>
         
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Share2 className="size-4 mr-2" />
-            Share
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowSummaryModal(true)}
+          >
+            <FileText className="size-4 mr-2" />
+            Summarize Article
           </Button>
-          <Button variant="outline" size="sm">
-            <Bookmark className="size-4 mr-2" />
-            Save
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/articles/${article.slug || article.id}/edit`}>
-              <Edit className="size-4 mr-2" />
-              Edit
-            </Link>
-          </Button>
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             size="sm"
             onClick={() => setShowDeleteConfirm(true)}
-            disabled={deleteArticleMutation.isLoading}
+            disabled={deleteArticleMutation.isPending}
           >
-            {deleteArticleMutation.isLoading ? (
+            {deleteArticleMutation.isPending ? (
               <Loader2 className="size-4 mr-2 animate-spin" />
             ) : (
               <Trash2 className="size-4 mr-2" />
@@ -161,12 +155,12 @@ export default function ArticleDetails() {
                 Are you sure you want to delete this article? This action cannot be undone.
               </p>
               <div className="flex gap-2">
-                <Button 
-                  variant="destructive" 
+                <Button
+                  variant="destructive"
                   onClick={handleDelete}
-                  disabled={deleteArticleMutation.isLoading}
+                  disabled={deleteArticleMutation.isPending}
                 >
-                  {deleteArticleMutation.isLoading ? (
+                  {deleteArticleMutation.isPending ? (
                     <>
                       <Loader2 className="size-4 mr-2 animate-spin" />
                       Deleting...
@@ -271,6 +265,16 @@ export default function ArticleDetails() {
           </Button>
         </div>
       </div>
+
+      {/* Summary Modal */}
+      {article && (
+        <ArticleSummaryModal
+          articleId={article.id}
+          articleTitle={article.title}
+          isOpen={showSummaryModal}
+          onClose={() => setShowSummaryModal(false)}
+        />
+      )}
     </div>
   );
 }

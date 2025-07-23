@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save, Eye, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useCreateArticle } from "@/components/hooks/api/use-articles";
+import { TagSelector } from "@/components/ui/tag-selector";
 
 export default function CreateArticle() {
   const router = useRouter();
@@ -19,10 +20,15 @@ export default function CreateArticle() {
     content: "",
     excerpt: "",
     slug: "",
-    status: "DRAFT" as "DRAFT" | "PUBLISHED" | "ARCHIVED",
+    status: "PUBLISHED" as "DRAFT" | "PUBLISHED" | "ARCHIVED",
+    tagIds: [] as string[],
   });
 
-  const createArticleMutation = useCreateArticle();
+  const createArticleMutation = useCreateArticle({
+    onSuccess: () => {
+      router.push('/articles');
+    }
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,12 +45,13 @@ export default function CreateArticle() {
       excerpt: formData.excerpt.trim(),
       slug: formData.slug.trim(),
       status: formData.status,
+      tagIds: formData.tagIds,
     };
 
     createArticleMutation.mutate(articleData);
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | string[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -172,10 +179,7 @@ export default function CreateArticle() {
                     )}
                   </Button>
                   
-                  <Button type="button" variant="outline" className="w-full">
-                    <Eye className="size-4 mr-2" />
-                    Preview
-                  </Button>
+
                 </div>
               </CardContent>
             </Card>
@@ -240,6 +244,16 @@ export default function CreateArticle() {
                   <p className="text-xs text-muted-foreground">
                     Leave empty to auto-generate from content
                   </p>
+                </div>
+
+                {/* Tags */}
+                <div className="space-y-2">
+                  <TagSelector
+                    selectedTagIds={formData.tagIds}
+                    onTagsChange={(tagIds) => handleInputChange('tagIds', tagIds)}
+                    label="Tags"
+                    placeholder="Search or create tags..."
+                  />
                 </div>
               </CardContent>
             </Card>

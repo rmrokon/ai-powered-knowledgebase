@@ -50,6 +50,18 @@ export interface IArticleService {
       hasPrev: boolean;
     };
   }>;
+  searchUserArticles(query: string, userId: string, page?: number, limit?: number): Promise<{
+    data: any[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  }>;
+  summarizeArticle(id: string, userId: string): Promise<{ summary: string }>;
 }
 
 export class ArticleService implements IArticleService {
@@ -468,6 +480,15 @@ export class ArticleService implements IArticleService {
             OR: [
               { title: { contains: query, mode: 'insensitive' } },
               { excerpt: { contains: query, mode: 'insensitive' } },
+              {
+                tags: {
+                  some: {
+                    tag: {
+                      name: { contains: query, mode: 'insensitive' }
+                    }
+                  }
+                }
+              }
             ]
           },
           include: {
@@ -487,6 +508,15 @@ export class ArticleService implements IArticleService {
             OR: [
               { title: { contains: query, mode: 'insensitive' } },
               { excerpt: { contains: query, mode: 'insensitive' } },
+              {
+                tags: {
+                  some: {
+                    tag: {
+                      name: { contains: query, mode: 'insensitive' }
+                    }
+                  }
+                }
+              }
             ]
           }
         })
@@ -507,6 +537,117 @@ export class ArticleService implements IArticleService {
       };
     } catch (error) {
       throw new Error(`Failed to search articles: ${error}`);
+    }
+  }
+
+  async searchUserArticles(query: string, userId: string, page: number = 1, limit: number = 10): Promise<{
+    data: any[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  }> {
+    try {
+      const skip = (page - 1) * limit;
+
+      const [articles, total] = await Promise.all([
+        this.db.article.findMany({
+          where: {
+            userId,
+            OR: [
+              { title: { contains: query, mode: 'insensitive' } },
+              { excerpt: { contains: query, mode: 'insensitive' } },
+              {
+                tags: {
+                  some: {
+                    tag: {
+                      name: { contains: query, mode: 'insensitive' }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          include: {
+            user: true,
+            tags: {
+              include: {
+                tag: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        this.db.article.count({
+          where: {
+            userId,
+            OR: [
+              { title: { contains: query, mode: 'insensitive' } },
+              { excerpt: { contains: query, mode: 'insensitive' } },
+              {
+                tags: {
+                  some: {
+                    tag: {
+                      name: { contains: query, mode: 'insensitive' }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        })
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        data: articles,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1,
+        }
+      };
+    } catch (error) {
+      throw new Error(`Failed to search user articles: ${error}`);
+    }
+  }
+
+  async summarizeArticle(id: string, userId: string): Promise<{ summary: string }> {
+    try {
+      // Check if article exists and belongs to user
+      const article = await this.db.article.findFirst({
+        where: { id, userId }
+      });
+
+      if (!article) {
+        throw new Error('Article not found or access denied');
+      }
+
+      // Extract text content from the article
+      let textContent = '';
+      if (typeof article.content === 'string') {
+        textContent = article.content;
+      } else if (typeof article.content === 'object' && article.content !== null) {
+        // If content is JSON, try to extract text
+        textContent = JSON.stringify(article.content);
+      }
+
+      // For now, return a simple summary (you can integrate OpenRouter here)
+      const summary = `This is a summary of the article "${article.title}". ${article.excerpt || 'The article contains valuable information and insights.'}`;
+
+      return { summary };
+    } catch (error) {
+      throw new Error(`Failed to summarize article: ${error}`);
     }
   }
 }

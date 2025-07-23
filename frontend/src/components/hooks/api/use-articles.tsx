@@ -39,13 +39,31 @@ export const useGetUserArticles = (
 
 export const useSearchArticles = (
   query: string,
-  page: number = 1, 
+  page: number = 1,
   limit: number = 10,
   options?: Omit<UseQueryOptions<IPaginationResponse<IArticle>>, 'queryKey' | 'queryFn'>
 ) => {
   return api.useQuery(
     ['search-articles', query, page, limit],
     () => articleRepository.searchArticles(query, page, limit),
+    {
+      enabled: !!query && query.length > 0,
+      staleTime: 2 * 60 * 1000, // 2 minutes for search results
+      ...options
+    }
+  );
+};
+
+// Search user articles
+export const useSearchUserArticles = (
+  query: string,
+  page: number = 1,
+  limit: number = 10,
+  options?: Omit<UseQueryOptions<IPaginationResponse<IArticle>>, 'queryKey' | 'queryFn'>
+) => {
+  return api.useQuery(
+    ['search-user-articles', query, page, limit],
+    () => articleRepository.searchUserArticles(query, page, limit),
     {
       enabled: !!query && query.length > 0,
       staleTime: 2 * 60 * 1000, // 2 minutes for search results
@@ -93,10 +111,12 @@ export const useCreateArticle = (
   return api.useMutation(
     articleRepository.createArticle.bind(articleRepository),
     {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Article created successfully");
         queryClient.invalidateQueries({queryKey: ["articles"]});
         queryClient.invalidateQueries({queryKey: ['user-articles']});
+        queryClient.invalidateQueries({queryKey: ['search-articles']});
+        queryClient.invalidateQueries({queryKey: ['search-user-articles']});
       },
       onError: (error) => {
         toast.error(error instanceof Error ? error.message : 'Failed to create article');
@@ -110,7 +130,7 @@ export const useDeleteArticle = (
   options?: UseMutationOptions<void, unknown, string, unknown>
 ) => {
   const queryClient = api.useQueryClient();
-  
+
   return api.useMutation(
     articleRepository.deleteArticle.bind(articleRepository),
     {
@@ -118,9 +138,26 @@ export const useDeleteArticle = (
         toast.success("Article deleted successfully");
         queryClient.invalidateQueries({queryKey: ['articles']});
         queryClient.invalidateQueries({queryKey: ['user-articles']});
+        queryClient.invalidateQueries({queryKey: ['search-articles']});
+        queryClient.invalidateQueries({queryKey: ['search-user-articles']});
       },
       onError: (error) => {
         toast.error(error instanceof Error ? error.message : 'Failed to delete article');
+      },
+      ...options
+    }
+  );
+};
+
+// Summarize article
+export const useSummarizeArticle = (
+  options?: UseMutationOptions<{ summary: string }, unknown, string, unknown>
+) => {
+  return api.useMutation(
+    articleRepository.summarizeArticle.bind(articleRepository),
+    {
+      onError: (error) => {
+        toast.error(error instanceof Error ? error.message : 'Failed to summarize article');
       },
       ...options
     }

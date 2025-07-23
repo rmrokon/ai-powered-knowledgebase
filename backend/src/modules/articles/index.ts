@@ -26,6 +26,16 @@ ArticleRouter.route('/users/:userId').get(
   asyncHandler(articleController.getUserArticles),
 );
 
+ArticleRouter.route('/my-articles').get(
+  [isAuthenticated],
+  asyncHandler(articleController.getMyArticles),
+);
+
+ArticleRouter.route('/my-articles/search').get(
+  [isAuthenticated],
+  asyncHandler(articleController.searchMyArticles),
+);
+
 ArticleRouter.route('/search').get(
   asyncHandler(articleController.searchArticles),
 );
@@ -56,4 +66,9 @@ ArticleRouter.route('/:id/publish').patch(
 ArticleRouter.route('/:id/archive').patch(
   [isAuthenticated],
   asyncHandler(articleController.archiveArticle),
+);
+
+ArticleRouter.route('/:id/summarize').post(
+  [isAuthenticated],
+  asyncHandler(articleController.summarizeArticle),
 );

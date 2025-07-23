@@ -9,6 +9,9 @@ import CredentialController from './credentials/controller';
 import { ArticleRepository } from './articles/repository';
 import { ArticleService } from './articles/service';
 import ArticleController from './articles/controller';
+import { TagRepository } from './tags/repository';
+import { TagService } from './tags/service';
+import TagController from './tags/controller';
 
 // Initialize Prisma Client (singleton)
 export const db = new PrismaClient();
@@ -36,6 +39,13 @@ export const credentialController = new CredentialController(credentialService);
 export const articleRepository = new ArticleRepository(db);
 export const articleService = new ArticleService(articleRepository, db);
 export const articleController = new ArticleController(articleService);
+
+// =============================================================================
+// TAG MODULE
+// =============================================================================
+export const tagRepository = new TagRepository(db);
+export const tagService = new TagService(tagRepository, db);
+export const tagController = new TagController(tagService);
 
 // =============================================================================
 // CLEANUP FUNCTION

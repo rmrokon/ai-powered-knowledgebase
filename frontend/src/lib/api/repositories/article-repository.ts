@@ -113,6 +113,15 @@ export class ArticleRepository {
     };
   }
 
+  async searchUserArticles(query: string, page: number = 1, limit: number = 10): Promise<IPaginationResponse<IArticle>> {
+    const params = { q: query, page, limit };
+    const res = await this.client.get<IArticlesApiResponse>('/articles/my-articles/search', params);
+    return {
+      data: res.data,
+      pagination: res.pagination
+    };
+  }
+
   async getArticleById(id: string): Promise<IArticle> {
     const res = await this.client.get<IArticleApiResponse>(`/articles/${id}`);
     return res.data;
@@ -144,6 +153,11 @@ export class ArticleRepository {
 
   async archiveArticle(id: string): Promise<IArticle> {
     const res = await this.client.post<IArticleApiResponse>(`/articles/${id}/archive`, {});
+    return res.data;
+  }
+
+  async summarizeArticle(id: string): Promise<{ summary: string }> {
+    const res = await this.client.post<{ success: boolean; data: { summary: string } }>(`/articles/${id}/summarize`, {});
     return res.data;
   }
 }
