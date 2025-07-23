@@ -1,26 +1,78 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --radius: 0.75rem;
+  /* Elegant warm whites and deep charcoals */
+  --background: 0 0% 98%;
+  --foreground: 220 15% 15%;
+  
+  /* Electric blue primary - vibrant yet sophisticated */
+  --primary: 212 100% 55%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Rich emerald secondary - luxurious and vibrant */
+  --secondary: 158 85% 45%;
+  --secondary-foreground: 0 0% 100%;
+  
+  /* Soft neutral with warmth */
+  --muted: 210 15% 92%;
+  --muted-foreground: 220 12% 45%;
+  
+  /* Crisp borders and inputs */
+  --border: 215 20% 88%;
+  --input: 215 20% 88%;
+  --ring: 212 100% 55%;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme="dark"] {
+  /* Rich dark background with subtle blue undertone */
+  --background: 222 20% 6%;
+  --foreground: 0 0% 95%;
+  
+  /* Brighter electric blue for dark mode */
+  --primary: 212 100% 65%;
+  --primary-foreground: 222 20% 8%;
+  
+  /* Vibrant mint green for dark mode */
+  --secondary: 158 75% 55%;
+  --secondary-foreground: 222 20% 8%;
+  
+  /* Warm dark muted tones */
+  --muted: 222 15% 15%;
+  --muted-foreground: 210 8% 70%;
+  
+  /* Subtle borders with character */
+  --border: 222 12% 22%;
+  --input: 222 12% 22%;
+  --ring: 212 100% 65%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter Tight', sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+@layer utilities {
+  .bg-background { background-color: hsl(var(--background)); }
+  .bg-foreground { background-color: hsl(var(--foreground)); }
+  .bg-primary { background-color: hsl(var(--primary)); }
+  .bg-primary-foreground { background-color: hsl(var(--primary-foreground)); }
+  .bg-secondary { background-color: hsl(var(--secondary)); }
+  .bg-secondary-foreground { background-color: hsl(var(--secondary-foreground)); }
+  .bg-muted { background-color: hsl(var(--muted)); }
+  .bg-muted-foreground { background-color: hsl(var(--muted-foreground)); }
+  
+  .text-background { color: hsl(var(--background)); }
+  .text-foreground { color: hsl(var(--foreground)); }
+  .text-primary { color: hsl(var(--primary)); }
+  .text-primary-foreground { color: hsl(var(--primary-foreground)); }
+  .text-secondary { color: hsl(var(--secondary)); }
+  .text-secondary-foreground { color: hsl(var(--secondary-foreground)); }
+  .text-muted { color: hsl(var(--muted)); }
+  .text-muted-foreground { color: hsl(var(--muted-foreground)); }
+  
+  .border-border { border-color: hsl(var(--border)); }
+  .border-input { border-color: hsl(var(--input)); }
+  .ring-ring { ring-color: hsl(var(--ring)); }
 }
