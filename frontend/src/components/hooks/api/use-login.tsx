@@ -15,7 +15,7 @@ export const useLogin = (options?: UseMutationOptions<IAuth, unknown, ILogin, un
             login(data.user);
             localStorage.setItem("accessToken", data?.accessToken);
             toast.success("Successfully logged in")
-            router.push('/takeaway-menu')
+            router.push('/articles')
         },
         onError: (error) => {
             toast.error(error instanceof Error ? error.message : 'Login Failed')

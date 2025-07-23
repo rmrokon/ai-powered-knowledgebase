@@ -3,7 +3,7 @@ import { IUser } from "./user-repository";
 
 export type IRegister = {
     password: string;
-} & IUser;
+} & Omit<IUser, 'id' |'createdAt'>;
 
 
 export interface ILogin {
