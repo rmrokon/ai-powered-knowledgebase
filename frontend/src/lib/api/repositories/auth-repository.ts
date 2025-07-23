@@ -35,7 +35,7 @@ export class AuthRepository {
     constructor(private client: HttpClient) {}
 
     async login(body: ILogin): Promise<IAuth>{
-        const res = await this.client.post<IAuthApi>('/users/login/', body);
+        const res = await this.client.post<IAuthApi>('/credentials/login/', body);
         const authDTO = {
             accessToken: res.accessToken,
             refreshToken: res.refreshToken,
@@ -45,7 +45,7 @@ export class AuthRepository {
     }
 
     async register(body: IRegister): Promise<IUser>{
-        const res = await this.client.post<IUserApi>('/users/registration/', body)
+        const res = await this.client.post<IUserApi>('/credentials', body)
         const registerDTO = {
             id: res.id,
             firstName: res.firstName,

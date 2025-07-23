@@ -11,7 +11,6 @@ export class AxiosHttpClient implements HttpClient {
       baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
     });
 
-    // ✅ Request Interceptor (add Authorization header)
     this.axiosInstance.interceptors.request.use((config) => {
       const accessToken = typeof window !== 'undefined'
         ? localStorage.getItem('accessToken')
@@ -25,7 +24,6 @@ export class AxiosHttpClient implements HttpClient {
       return config;
     });
 
-    // ✅ Response/Error Interceptor
     this.axiosInstance.interceptors.response.use(
       (response) => {
         if(response.status === 401){
