@@ -124,14 +124,11 @@ export class ArticleService implements IArticleService {
   async createArticle(userId: string, data: IArticleRequestBody): Promise<any> {
     try {
       return await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
-        // Generate slug if not provided
         const slug = data.slug || this.generateSlug(data.title);
         const uniqueSlug = await this.ensureUniqueSlug(slug);
 
-        // Generate excerpt if not provided
         const excerpt = data.excerpt || this.generateExcerpt(data.content);
 
-        // Create the article
         const article = await tx.article.create({
           data: {
             title: data.title,
@@ -152,7 +149,6 @@ export class ArticleService implements IArticleService {
           }
         });
 
-        // Handle tags if provided
         if (data.tagIds && data.tagIds.length > 0) {
           await tx.articleTag.createMany({
             data: data.tagIds.map(tagId => ({
@@ -161,7 +157,6 @@ export class ArticleService implements IArticleService {
             }))
           });
 
-          // Fetch the article with tags
           const articleWithTags = await tx.article.findUnique({
             where: { id: article.id },
             include: {
@@ -224,7 +219,6 @@ export class ArticleService implements IArticleService {
   async updateArticle(id: string, userId: string, data: IUpdateArticleRequestBody): Promise<any> {
     try {
       return await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
-        // Check if article exists and belongs to user
         const existingArticle = await tx.article.findFirst({
           where: { id, userId }
         });
@@ -233,12 +227,10 @@ export class ArticleService implements IArticleService {
           throw new Error('Article not found or access denied');
         }
 
-        // Prepare update data
         const updateData: any = {};
 
         if (data.title !== undefined) {
           updateData.title = data.title;
-          // Update slug if title changed
           if (data.slug === undefined) {
             const newSlug = this.generateSlug(data.title);
             updateData.slug = await this.ensureUniqueSlug(newSlug, id);
@@ -260,13 +252,11 @@ export class ArticleService implements IArticleService {
 
         if (data.status !== undefined) {
           updateData.status = data.status;
-          // Set publishedAt when publishing
           if (data.status === ArticleStatus.PUBLISHED && (existingArticle as any).status !== ArticleStatus.PUBLISHED) {
             updateData.publishedAt = new Date();
           }
         }
 
-        // Update the article
         const article = await tx.article.update({
           where: { id },
           data: updateData,
@@ -280,14 +270,11 @@ export class ArticleService implements IArticleService {
           }
         });
 
-        // Handle tags if provided
         if (data.tagIds !== undefined) {
-          // Remove existing tags
           await tx.articleTag.deleteMany({
             where: { articleId: id }
           });
 
-          // Add new tags
           if (data.tagIds.length > 0) {
             await tx.articleTag.createMany({
               data: data.tagIds.map(tagId => ({
