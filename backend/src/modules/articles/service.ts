@@ -1,4 +1,4 @@
-import { ArticleStatus, PrismaClient } from '@prisma/client';
+import { ArticleStatus, Prisma, PrismaClient } from '@prisma/client';
 import { BaseRepository } from '../base-repo';
 import {
   CreateArticle,
@@ -123,7 +123,7 @@ export class ArticleService implements IArticleService {
 
   async createArticle(userId: string, data: IArticleRequestBody): Promise<any> {
     try {
-      return await this.db.$transaction(async (tx) => {
+      return await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         // Generate slug if not provided
         const slug = data.slug || this.generateSlug(data.title);
         const uniqueSlug = await this.ensureUniqueSlug(slug);
@@ -223,7 +223,7 @@ export class ArticleService implements IArticleService {
 
   async updateArticle(id: string, userId: string, data: IUpdateArticleRequestBody): Promise<any> {
     try {
-      return await this.db.$transaction(async (tx) => {
+      return await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         // Check if article exists and belongs to user
         const existingArticle = await tx.article.findFirst({
           where: { id, userId }
@@ -322,7 +322,7 @@ export class ArticleService implements IArticleService {
 
   async deleteArticle(id: string, userId: string): Promise<void> {
     try {
-      await this.db.$transaction(async (tx) => {
+      await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         // Check if article exists and belongs to user
         const article = await tx.article.findFirst({
           where: { id, userId }

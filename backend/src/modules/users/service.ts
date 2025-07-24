@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { BaseRepository } from '../base-repo';
 import { 
   CreateUser, 
@@ -103,7 +103,7 @@ export class UserService implements IUserService {
 
   async deleteUser(id: string): Promise<void> {
     try {
-      await this.db.$transaction(async (tx) => {
+      await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         const user = await tx.user.findUnique({ where: { id } });
         if (!user) {
           throw new Error('User not found!');
