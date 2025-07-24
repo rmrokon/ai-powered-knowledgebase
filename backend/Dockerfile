@@ -7,13 +7,10 @@ RUN yarn install --production --frozen-lockfile
 
 COPY . .
 
-# Build the app
 RUN yarn build
 
-# Generate Prisma client
 RUN npx prisma generate
 
-# Use non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 RUN chown -R nodejs:nodejs /app
 USER nodejs

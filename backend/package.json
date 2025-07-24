@@ -11,8 +11,7 @@
     "db:push": "npx prisma db push",
     "db:migrate": "npx prisma migrate deploy",
     "db:setup": "npx prisma generate && npx prisma db push",
-    "docker:build": "docker build -t backend-prod .",
-    "docker:run": "docker run -p 5000:5000 --env-file .env backend-prod"
+    "docker:build": "docker build -t backend-prod ."
   },
   "dependencies": {
     "@prisma/client": "6.12.0",
