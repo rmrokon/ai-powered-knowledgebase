@@ -139,6 +139,38 @@ export default class ArticleController {
     }
   };
 
+  getMyArticles = async (req: Request, res: Response) => {
+    try {
+      const userId = req.auth.user.id;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      // Parse tagIds from query parameter
+      let tagIds: string[] | undefined;
+      if (req.query.tagIds) {
+        if (typeof req.query.tagIds === 'string') {
+          tagIds = req.query.tagIds.split(',').filter(id => id.trim());
+        } else if (Array.isArray(req.query.tagIds)) {
+          tagIds = req.query.tagIds.filter(id => typeof id === 'string' && id.trim()) as string[];
+        }
+      }
+
+      const result = await this._service.getUserArticles(userId, page, limit, tagIds);
+
+      return res.status(200).json({
+        success: true,
+        data: result.data,
+        pagination: result.pagination,
+        message: 'My articles retrieved successfully'
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to get my articles'
+      });
+    }
+  };
+
   getAllArticles = async (req: Request, res: Response) => {
     try {
       const page = parseInt(req.query.page as string) || 1;
@@ -224,6 +256,56 @@ export default class ArticleController {
       return res.status(400).json({
         success: false,
         message: error instanceof Error ? error.message : 'Failed to search articles'
+      });
+    }
+  };
+
+  searchMyArticles = async (req: Request, res: Response) => {
+    try {
+      const query = req.query.q as string;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const userId = req.auth.user.id;
+
+      if (!query) {
+        return res.status(400).json({
+          success: false,
+          message: 'Search query is required'
+        });
+      }
+
+      const result = await this._service.searchUserArticles(query, userId, page, limit);
+
+      return res.status(200).json({
+        success: true,
+        data: result.data,
+        pagination: result.pagination,
+        message: 'My articles searched successfully'
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to search my articles'
+      });
+    }
+  };
+
+  summarizeArticle = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const userId = req.auth.user.id;
+
+      const result = await this._service.summarizeArticle(id, userId);
+
+      return res.status(200).json({
+        success: true,
+        data: result,
+        message: 'Article summarized successfully'
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to summarize article'
       });
     }
   };
