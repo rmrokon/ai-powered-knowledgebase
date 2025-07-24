@@ -22,7 +22,7 @@ interface TagSelectorProps {
 function TagSelectorComponent({
   selectedTagIds,
   onTagsChange,
-  label = "Tags",
+  label,
   placeholder = "Search or create tags..."
 }: TagSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -68,7 +68,9 @@ function TagSelectorComponent({
     onTagsChange(newTagIds);
   };
 
-  const handleCreateTag = () => {
+  const handleCreateTag = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (debouncedSearchTerm.trim()) {
       createTagMutation.mutate({
         name: debouncedSearchTerm.trim(),
@@ -86,7 +88,7 @@ function TagSelectorComponent({
 
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
+      {label && <Label>{label}</Label>}
       
       {/* Selected Tags */}
       {selectedTags.length > 0 && (

@@ -173,8 +173,6 @@ export default function CreateArticle() {
                       </>
                     )}
                   </Button>
-                  
-
                 </div>
               </CardContent>
             </Card>
@@ -182,71 +180,14 @@ export default function CreateArticle() {
             {/* SEO Settings */}
             <Card>
               <CardHeader>
-                <CardTitle>SEO & Meta</CardTitle>
+                <CardTitle>Add Tags</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Slug */}
-                <div className="space-y-2">
-                  <Label htmlFor="slug">URL Slug</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="slug"
-                      placeholder="article-url-slug"
-                      value={formData.slug}
-                      onChange={(e) => handleInputChange('slug', e.target.value)}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={generateSlug}
-                      disabled={!formData.title.trim()}
-                    >
-                      Generate
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Leave empty to auto-generate from title
-                  </p>
-                </div>
-
-                {/* Excerpt */}
-                <div className="space-y-2">
-                  <Label htmlFor="excerpt">Excerpt</Label>
-                  <div className="space-y-2">
-                    <Textarea
-                      id="excerpt"
-                      placeholder="Brief description of the article..."
-                      value={formData.excerpt}
-                      onChange={(e) => handleInputChange('excerpt', e.target.value)}
-                      className="min-h-[80px] resize-y"
-                    />
-                    <div className="flex justify-between items-center">
-                      <p className="text-xs text-muted-foreground">
-                        {formData.excerpt.length}/200 characters
-                      </p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={generateExcerpt}
-                        disabled={!formData.content.trim()}
-                      >
-                        Generate
-                      </Button>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Leave empty to auto-generate from content
-                  </p>
-                </div>
-
                 {/* Tags */}
                 <div className="space-y-2">
                   <TagSelector
                     selectedTagIds={formData.tagIds}
                     onTagsChange={(tagIds) => handleInputChange('tagIds', tagIds)}
-                    label="Tags"
                     placeholder="Search or create tags..."
                   />
                 </div>
