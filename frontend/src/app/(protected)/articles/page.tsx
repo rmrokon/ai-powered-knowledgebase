@@ -51,6 +51,10 @@ export default function Articles() {
     setCurrentPage(1);
   };
 
+  const handleSetSearchTerm = (e: React.ChangeEvent<HTMLInputElement>)=>{
+    setSearchTerm(e.target.value)
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -82,7 +86,7 @@ export default function Articles() {
           <Input
             placeholder="Search articles by title, content, or tags..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSetSearchTerm}
             className="pl-10 pr-4"
           />
           {searchTerm && (

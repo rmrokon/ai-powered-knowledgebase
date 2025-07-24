@@ -45,10 +45,10 @@ function TagSelectorComponent({
   });
 
   // Load selected tags info (you might want to add a hook to get tags by IDs)
-  useEffect(() => {
-    // For now, we'll just keep the selected tags in local state
-    // In a real app, you might want to fetch tag details by IDs
-  }, [selectedTagIds]);
+  // useEffect(() => {
+  //   // For now, we'll just keep the selected tags in local state
+  //   // In a real app, you might want to fetch tag details by IDs
+  // }, [selectedTagIds]);
 
   const handleTagSelect = (tag: ITag) => {
     if (!selectedTagIds.includes(tag.id)) {
