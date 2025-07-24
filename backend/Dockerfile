@@ -1,22 +1,20 @@
-# Dockerfile
-
 FROM node:18-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Install dependencies first (for better caching)
 COPY package.json yarn.lock ./
-RUN yarn install
+RUN yarn install --production --frozen-lockfile
 
-# Copy source code
 COPY . .
 
-# Generate Prisma client
+RUN yarn build
+
 RUN npx prisma generate
 
-# Expose port
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
 EXPOSE 5000
 
-# Run in development mode
-CMD ["yarn", "dev"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && yarn start"]
