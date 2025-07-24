@@ -67,6 +67,7 @@ export class ArticleRepository {
     if (tagIds && tagIds.length > 0) {
       params.tagIds = tagIds.join(',');
     }
+    console.log('getUserArticles API call with params:', params);
     const res = await this.client.get<IArticlesApiResponse>('/articles/my-articles', params);
     const articlesDTO = {
       data: res.data.map(item => ({
