@@ -29,7 +29,8 @@ export function LoginForm({
         register
     } = useForm({
         resolver: zodResolver(LoginSchema),
-        mode: 'all'
+        mode: 'all',
+        reValidateMode: "onChange"
     })
     const handleLogin = async (values: ILogin) => {
         try{
@@ -53,7 +54,7 @@ export function LoginForm({
       <div className="grid gap-6">
         <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" {...register("email")} />
+          <Input id="email" placeholder="m@example.com" {...register("email")} />
           {!!errors.email && <Error>{errors.email.message}</Error>}
         </div>
         <div className="grid gap-3">
