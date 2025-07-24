@@ -24,9 +24,11 @@ function TagFilterComponent({ selectedTagIds, onTagsChange, className }: TagFilt
 
   const handleTagToggle = (tagId: string) => {
     if (selectedTagIds.includes(tagId)) {
-      onTagsChange(selectedTagIds.filter(id => id !== tagId));
+      const newTagIds = selectedTagIds.filter(id => id !== tagId);
+      onTagsChange(newTagIds);
     } else {
-      onTagsChange([...selectedTagIds, tagId]);
+      const newTagIds = [...selectedTagIds, tagId];
+      onTagsChange(newTagIds);
     }
   };
 

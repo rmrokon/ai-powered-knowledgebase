@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { X, Plus, Search, Loader2 } from "lucide-react";
-import { useSearchTags, useCreateTag } from "@/components/hooks/api/use-tags";
+import { useSearchTags, useCreateTag, useGetTags } from "@/components/hooks/api/use-tags";
 import { useDebouncedSearch } from "@/components/hooks/use-debounced-search";
 import { ITag } from "@/lib/api/repositories/tag-repository";
 import ClientOnly from "@/components/client-only";
@@ -17,13 +17,15 @@ interface TagSelectorProps {
   onTagsChange: (tagIds: string[]) => void;
   label?: string;
   placeholder?: string;
+  showCreateButton?: boolean;
 }
 
 function TagSelectorComponent({
   selectedTagIds,
   onTagsChange,
-  label = "Tags",
-  placeholder = "Search or create tags..."
+  label,
+  placeholder = "Search or create tags...",
+  showCreateButton = true
 }: TagSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<ITag[]>([]);
@@ -33,28 +35,30 @@ function TagSelectorComponent({
     enabled: isOpen && debouncedSearchTerm.length > 0
   });
 
+  const { data: allTagsData } = useGetTags();
+
   const createTagMutation = useCreateTag({
     onSuccess: (newTag) => {
       const newTagIds = [...selectedTagIds, newTag.id];
-      const newSelectedTags = [...selectedTags, newTag];
-      setSelectedTags(newSelectedTags);
       onTagsChange(newTagIds);
       setSearchTerm("");
       setIsOpen(false);
     }
   });
 
-  // Load selected tags info (you might want to add a hook to get tags by IDs)
+  // Sync selected tags with selectedTagIds prop
   useEffect(() => {
-    // For now, we'll just keep the selected tags in local state
-    // In a real app, you might want to fetch tag details by IDs
-  }, [selectedTagIds]);
+    if (allTagsData?.data && selectedTagIds.length > 0) {
+      const tags = allTagsData.data.filter(tag => selectedTagIds.includes(tag.id));
+      setSelectedTags(tags);
+    } else {
+      setSelectedTags([]);
+    }
+  }, [selectedTagIds, allTagsData]);
 
   const handleTagSelect = (tag: ITag) => {
     if (!selectedTagIds.includes(tag.id)) {
       const newTagIds = [...selectedTagIds, tag.id];
-      const newSelectedTags = [...selectedTags, tag];
-      setSelectedTags(newSelectedTags);
       onTagsChange(newTagIds);
     }
     setSearchTerm("");
@@ -63,12 +67,12 @@ function TagSelectorComponent({
 
   const handleTagRemove = (tagId: string) => {
     const newTagIds = selectedTagIds.filter(id => id !== tagId);
-    const newSelectedTags = selectedTags.filter(tag => tag.id !== tagId);
-    setSelectedTags(newSelectedTags);
     onTagsChange(newTagIds);
   };
 
-  const handleCreateTag = () => {
+  const handleCreateTag = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (debouncedSearchTerm.trim()) {
       createTagMutation.mutate({
         name: debouncedSearchTerm.trim(),
@@ -85,8 +89,8 @@ function TagSelectorComponent({
     !filteredResults.some(tag => tag.name.toLowerCase() === debouncedSearchTerm.toLowerCase());
 
   return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
+    <div className="space-y-2 relative">
+      {label && <Label>{label}</Label>}
       
       {/* Selected Tags */}
       {selectedTags.length > 0 && (
@@ -117,7 +121,7 @@ function TagSelectorComponent({
 
       {/* Search Input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground size-4" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground size-4 z-10" />
         <Input
           placeholder={placeholder}
           value={searchTerm}
@@ -129,7 +133,7 @@ function TagSelectorComponent({
 
       {/* Dropdown Results */}
       {isOpen && (debouncedSearchTerm.length > 0 || searchTerm.length > 0) && (
-        <Card className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto">
+        <Card className="absolute z-50 w-full mt-1 max-h-48 overflow-y-auto shadow-lg border">
           <CardContent className="p-2">
             {isSearching && (
               <div className="flex items-center justify-center py-4">
@@ -166,7 +170,7 @@ function TagSelectorComponent({
               </div>
             )}
 
-            {!isSearching && showCreateOption && (
+            {!isSearching && showCreateOption && showCreateButton && (
               <Button
                 variant="ghost"
                 className="w-full justify-start h-auto p-2 border-t"

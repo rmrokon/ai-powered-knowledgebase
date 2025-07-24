@@ -95,7 +95,7 @@ export default function Profile() {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
+            {/* <div className="flex gap-3 pt-4">
               <Button className="flex items-center gap-2">
                 <Edit className="size-4" />
                 Edit Profile
@@ -103,12 +103,12 @@ export default function Profile() {
               <Button variant="outline">
                 Change Password
               </Button>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
 
         {/* Account Statistics */}
-        <div className="grid gap-4 md:grid-cols-3">
+        {/* <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
@@ -133,7 +133,7 @@ export default function Profile() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
       </div>
   )
 }
