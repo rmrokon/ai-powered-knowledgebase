@@ -8,6 +8,7 @@ import {
   IArticleRequestBody,
   IUpdateArticleRequestBody
 } from './types';
+import askAi from '../../lib/openrouter';
 
 export interface IArticleService {
   createArticle(userId: string, data: IArticleRequestBody): Promise<any>;
@@ -134,7 +135,7 @@ export class ArticleService implements IArticleService {
         const article = await tx.article.create({
           data: {
             title: data.title,
-            content: data.content,
+            content: data.content ?? '',
             excerpt,
             slug: uniqueSlug,
             status: data.status || ArticleStatus.PUBLISHED,
@@ -638,7 +639,6 @@ export class ArticleService implements IArticleService {
 
   async summarizeArticle(id: string, userId: string): Promise<{ summary: string }> {
     try {
-      // Check if article exists and belongs to user
       const article = await this.db.article.findFirst({
         where: { id, userId }
       });
@@ -647,17 +647,38 @@ export class ArticleService implements IArticleService {
         throw new Error('Article not found or access denied');
       }
 
-      // Extract text content from the article
       let textContent = '';
       if (typeof article.content === 'string') {
         textContent = article.content;
       } else if (typeof article.content === 'object' && article.content !== null) {
-        // If content is JSON, try to extract text
         textContent = JSON.stringify(article.content);
       }
 
+      const prompt = `
+        Please provide a concise summary of the following article. Your summary should:
+
+1. Capture the main argument or central thesis
+2. Include the most important supporting points and evidence
+3. Maintain the original tone and perspective
+4. Be approximately 5-7 sentences long
+5. Use clear, accessible language
+
+Focus on what a reader would need to know to understand the article's core message and key takeaways. Avoid including minor details, examples used solely for illustration, or tangential information.
+
+Article title: ${article.title}
+Article: ${textContent}
+      `
+
       // For now, return a simple summary (you can integrate OpenRouter here)
-      const summary = `This is a summary of the article "${article.title}". ${article.excerpt || 'The article contains valuable information and insights.'}`;
+      const res = await askAi({
+        model: 'deepseek/deepseek-r1-0528:free',
+        prompt
+      })
+      let summary = '';
+      if(!res?.content){
+        summary = `This is a summary of the article "${article.title}". ${article.excerpt || 'The article contains valuable information and insights.'}`;
+      }
+      else summary = res.content;
 
       return { summary };
     } catch (error) {
