@@ -6,14 +6,16 @@ import { UseMutationOptions } from "@tanstack/react-query";
 import { api } from "@/lib/api/tanstack-adapter";
 import { IAuth, ILogin } from "@/lib/api/repositories/auth-repository";
 import toast from "react-hot-toast";
+import useLocalStorage from "../store/use-local-storage";
 
 export const useLogin = (options?: UseMutationOptions<IAuth, unknown, ILogin, unknown> | undefined) => {
     const router = useRouter();
     const {login}= useAuthStore();
+    const [accessToken, setAccessToken] = useLocalStorage('accessToken', '');
     return api.useMutation(authRepository.login.bind(authRepository), {
         onSuccess: (data) => {
             login(data.user);
-            localStorage.setItem("accessToken", data?.accessToken);
+            setAccessToken(data?.accessToken);
             toast.success("Successfully logged in")
             router.push('/articles')
         },

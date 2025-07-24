@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import useAuthStore from "@/components/hooks/store/use-auth-store"
 import toast from "react-hot-toast"
+import ClientOnly from "@/components/client-only"
 
 interface NavLink {
   href: string
@@ -31,14 +32,17 @@ const navLinks: NavLink[] = [
   },
 ]
 
-export function Navbar() {
+function NavbarComponent() {
   const [isOpen, setIsOpen] = React.useState(false)
   const { isLoggedIn, user, logout } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken")
+    if(typeof window !== 'undefined'){
+
+      localStorage.removeItem("accessToken")
+    }
     logout()
     toast.success("Logged out successfully")
     router.push("/login")
@@ -186,5 +190,13 @@ export function Navbar() {
         </div>
       )}
     </nav>
+  )
+}
+
+export function Navbar() {
+  return (
+    <ClientOnly>
+      <NavbarComponent />
+    </ClientOnly>
   )
 }

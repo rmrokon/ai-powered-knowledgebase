@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpClient } from "../http-client";
 import { IUser } from "./user-repository";
 
@@ -31,7 +32,7 @@ export interface IArticle {
   tags: { tag: ITag }[];
 }
 
-export type ICreateArticle = Omit<IArticle, "id" | "createdAt" | "updatedAt" | "publishedAt">
+export type ICreateArticle = Omit<IArticle, "id" | "createdAt" | "updatedAt" | "publishedAt" | "userId" | "user" | "tags">
 
 export interface IPagination {
   page: number;

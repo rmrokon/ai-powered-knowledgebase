@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChevronDown, X, Filter } from "lucide-react";
 import { useGetTags } from "@/components/hooks/api/use-tags";
 import { ITag } from "@/lib/api/repositories/tag-repository";
+import ClientOnly from "@/components/client-only";
 
 interface TagFilterProps {
   selectedTagIds: string[];
@@ -14,7 +15,7 @@ interface TagFilterProps {
   className?: string;
 }
 
-export function TagFilter({ selectedTagIds, onTagsChange, className }: TagFilterProps) {
+function TagFilterComponent({ selectedTagIds, onTagsChange, className }: TagFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { data: tagsData, isLoading } = useGetTags();
   
@@ -154,5 +155,13 @@ export function TagFilter({ selectedTagIds, onTagsChange, className }: TagFilter
         </>
       )}
     </div>
+  );
+}
+
+export function TagFilter(props: TagFilterProps) {
+  return (
+    <ClientOnly>
+      <TagFilterComponent {...props} />
+    </ClientOnly>
   );
 }

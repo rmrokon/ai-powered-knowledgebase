@@ -10,6 +10,7 @@ import { X, Plus, Search, Loader2 } from "lucide-react";
 import { useSearchTags, useCreateTag } from "@/components/hooks/api/use-tags";
 import { useDebouncedSearch } from "@/components/hooks/use-debounced-search";
 import { ITag } from "@/lib/api/repositories/tag-repository";
+import ClientOnly from "@/components/client-only";
 
 interface TagSelectorProps {
   selectedTagIds: string[];
@@ -18,9 +19,9 @@ interface TagSelectorProps {
   placeholder?: string;
 }
 
-export function TagSelector({ 
-  selectedTagIds, 
-  onTagsChange, 
+function TagSelectorComponent({
+  selectedTagIds,
+  onTagsChange,
   label = "Tags",
   placeholder = "Search or create tags..."
 }: TagSelectorProps) {
@@ -177,7 +178,7 @@ export function TagSelector({
                 ) : (
                   <Plus className="size-4 mr-2" />
                 )}
-                Create "{debouncedSearchTerm}"
+                Create &rdquo;{debouncedSearchTerm}&quot;
               </Button>
             )}
 
@@ -198,5 +199,13 @@ export function TagSelector({
         />
       )}
     </div>
+  );
+}
+
+export function TagSelector(props: TagSelectorProps) {
+  return (
+    <ClientOnly>
+      <TagSelectorComponent {...props} />
+    </ClientOnly>
   );
 }

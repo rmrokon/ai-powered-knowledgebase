@@ -1,3 +1,4 @@
+"use client"
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosInstance } from 'axios';
 import { HttpClient } from './http-client';

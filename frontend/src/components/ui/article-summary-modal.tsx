@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, Loader2, FileText, Copy, Check } from "lucide-react";
 import { useSummarizeArticle } from "../hooks/api/articles/use-summarize-article";
+import ClientOnly from "@/components/client-only";
 
 interface ArticleSummaryModalProps {
   articleId: string;
@@ -13,11 +14,11 @@ interface ArticleSummaryModalProps {
   onClose: () => void;
 }
 
-export function ArticleSummaryModal({ 
-  articleId, 
-  articleTitle, 
-  isOpen, 
-  onClose 
+function ArticleSummaryModalComponent({
+  articleId,
+  articleTitle,
+  isOpen,
+  onClose
 }: ArticleSummaryModalProps) {
   const [summary, setSummary] = useState<string>("");
   const [copied, setCopied] = useState(false);
@@ -185,5 +186,13 @@ export function ArticleSummaryModal({
         </Card>
       </div>
     </>
+  );
+}
+
+export function ArticleSummaryModal(props: ArticleSummaryModalProps) {
+  return (
+    <ClientOnly>
+      <ArticleSummaryModalComponent {...props} />
+    </ClientOnly>
   );
 }
