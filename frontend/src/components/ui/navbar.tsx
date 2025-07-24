@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import useAuthStore from "@/components/hooks/store/use-auth-store"
 import toast from "react-hot-toast"
+import ClientOnly from "@/components/client-only"
 
 interface NavLink {
   href: string
@@ -31,7 +32,7 @@ const navLinks: NavLink[] = [
   },
 ]
 
-export function Navbar() {
+function NavbarComponent() {
   const [isOpen, setIsOpen] = React.useState(false)
   const { isLoggedIn, user, logout } = useAuthStore()
   const router = useRouter()
@@ -189,5 +190,13 @@ export function Navbar() {
         </div>
       )}
     </nav>
+  )
+}
+
+export function Navbar() {
+  return (
+    <ClientOnly>
+      <NavbarComponent />
+    </ClientOnly>
   )
 }

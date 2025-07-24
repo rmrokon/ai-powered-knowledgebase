@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +9,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArticleSummaryModal } from "@/components/ui/article-summary-modal";
 import { ArticleStatus } from "@/lib/api/repositories/article-repository";
+import ClientOnly from "@/components/client-only";
 
 interface Tag {
   id: string;
@@ -33,7 +36,7 @@ interface ArticleCardProps {
     className?: string;
 }
 
-export default function ArticleCard({
+function ArticleCardComponent({
     id,
     title,
     excerpt,
@@ -159,5 +162,13 @@ export default function ArticleCard({
                 onClose={() => setShowSummaryModal(false)}
             />
         </>
+    );
+}
+
+export default function ArticleCard(props: ArticleCardProps) {
+    return (
+        <ClientOnly>
+            <ArticleCardComponent {...props} />
+        </ClientOnly>
     );
 }
