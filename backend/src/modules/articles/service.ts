@@ -15,7 +15,7 @@ export interface IArticleService {
   getArticleBySlug(slug: string): Promise<any | null>;
   updateArticle(id: string, userId: string, data: IUpdateArticleRequestBody): Promise<any>;
   deleteArticle(id: string, userId: string): Promise<void>;
-  getUserArticles(userId: string, page?: number, limit?: number): Promise<{
+  getUserArticles(userId: string, page?: number, limit?: number, tagIds?: string[]): Promise<{
     data: any[];
     pagination: {
       page: number;
@@ -341,7 +341,7 @@ export class ArticleService implements IArticleService {
     }
   }
 
-  async getUserArticles(userId: string, page: number = 1, limit: number = 10): Promise<{
+  async getUserArticles(userId: string, page: number = 1, limit: number = 10, tagIds?: string[]): Promise<{
     data: any[];
     pagination: {
       page: number;
@@ -355,9 +355,23 @@ export class ArticleService implements IArticleService {
     try {
       const skip = (page - 1) * limit;
 
+      // Build where clause
+      const whereClause: any = { userId };
+
+      // Add tag filtering if tagIds are provided
+      if (tagIds && tagIds.length > 0) {
+        whereClause.tags = {
+          some: {
+            tagId: {
+              in: tagIds
+            }
+          }
+        };
+      }
+
       const [articles, total] = await Promise.all([
         this.db.article.findMany({
-          where: { userId },
+          where: whereClause,
           include: {
             user: true,
             tags: {
@@ -370,7 +384,7 @@ export class ArticleService implements IArticleService {
           skip,
           take: limit,
         }),
-        this.db.article.count({ where: { userId } })
+        this.db.article.count({ where: whereClause })
       ]);
 
       const totalPages = Math.ceil(total / limit);

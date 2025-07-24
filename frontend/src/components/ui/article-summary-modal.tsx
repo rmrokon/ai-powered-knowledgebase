@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, Loader2, FileText, Copy, Check } from "lucide-react";
-import { useSummarizeArticle } from "@/components/hooks/api/use-articles";
+import { useSummarizeArticle } from "../hooks/api/articles/use-summarize-article";
 
 interface ArticleSummaryModalProps {
   articleId: string;

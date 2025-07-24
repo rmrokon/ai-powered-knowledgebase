@@ -16,9 +16,11 @@ import {
   FileText
 } from "lucide-react";
 import Link from "next/link";
-import { useGetArticleBySlug, useDeleteArticle } from "@/components/hooks/api/use-articles";
 import { useState } from "react";
 import { ArticleSummaryModal } from "@/components/ui/article-summary-modal";
+import Spinner from "@/components/ui/spinner";
+import { useDeleteArticle } from "@/components/hooks/api/articles/use-delete-article";
+import { useGetArticleBySlug } from "@/components/hooks/api/articles/use-get-article-by-slug";
 
 export default function ArticleDetails() {
   const params = useParams();
@@ -73,7 +75,7 @@ export default function ArticleDetails() {
     }
     
     if (typeof content === 'object' && content !== null) {
-      // Handle JSON content - you might want to implement a proper rich text renderer here
+      // Handling JSON content - we may introduce rich text
       return (
         <div className="prose prose-gray dark:prose-invert max-w-none">
           <pre className="whitespace-pre-wrap bg-muted p-4 rounded-lg text-sm">
@@ -87,11 +89,7 @@ export default function ArticleDetails() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <Spinner />
   }
 
   if (error || !article) {

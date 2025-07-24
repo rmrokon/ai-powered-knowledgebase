@@ -10,8 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useCreateArticle } from "@/components/hooks/api/use-articles";
 import { TagSelector } from "@/components/ui/tag-selector";
+import { useCreateArticle } from "@/components/hooks/api/articles/use-create-article";
 
 export default function CreateArticle() {
   const router = useRouter();
@@ -24,11 +24,7 @@ export default function CreateArticle() {
     tagIds: [] as string[],
   });
 
-  const createArticleMutation = useCreateArticle({
-    onSuccess: () => {
-      router.push('/articles');
-    }
-  });
+  const createArticleMutation = useCreateArticle();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

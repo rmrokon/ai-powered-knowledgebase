@@ -145,7 +145,17 @@ export default class ArticleController {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
 
-      const result = await this._service.getUserArticles(userId, page, limit);
+      // Parse tagIds from query parameter
+      let tagIds: string[] | undefined;
+      if (req.query.tagIds) {
+        if (typeof req.query.tagIds === 'string') {
+          tagIds = req.query.tagIds.split(',').filter(id => id.trim());
+        } else if (Array.isArray(req.query.tagIds)) {
+          tagIds = req.query.tagIds.filter(id => typeof id === 'string' && id.trim()) as string[];
+        }
+      }
+
+      const result = await this._service.getUserArticles(userId, page, limit, tagIds);
 
       return res.status(200).json({
         success: true,

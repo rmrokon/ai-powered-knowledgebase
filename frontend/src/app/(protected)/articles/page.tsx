@@ -7,11 +7,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, Plus, Loader2, FileText } from "lucide-react";
 import Link from "next/link";
 import ArticleCard from "./articles-card";
-import { useGetUserArticles, useSearchUserArticles } from "@/components/hooks/api/use-articles";
 import { useDebouncedSearch } from "@/components/hooks/use-debounced-search";
+import { TagFilter } from "@/components/ui/tag-filter";
+import { useGetUserArticles } from "@/components/hooks/api/articles/use-get-user-articles";
+import { useSearchUserArticles } from "@/components/hooks/api/articles/use-search-articles";
 
 export default function Articles() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const { searchTerm, debouncedSearchTerm, setSearchTerm } = useDebouncedSearch("", 500);
 
   // Use search query if there's a debounced search term, otherwise get all articles
@@ -19,7 +22,7 @@ export default function Articles() {
     data: articlesData,
     isLoading: isLoadingArticles,
     error: articlesError
-  } = useGetUserArticles(currentPage, 12, undefined, {
+  } = useGetUserArticles(currentPage, 12, selectedTagIds, {
     enabled: !debouncedSearchTerm
   });
 
@@ -45,6 +48,11 @@ export default function Articles() {
     setCurrentPage(1);
   };
 
+  const handleTagsChange = (tagIds: string[]) => {
+    setSelectedTagIds(tagIds);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -54,7 +62,9 @@ export default function Articles() {
           <p className="text-muted-foreground mt-2">
             {debouncedSearchTerm
               ? `Search results for "${debouncedSearchTerm}"`
-              : "Discover and explore our collection of articles"
+              : selectedTagIds.length > 0
+                ? `Showing articles filtered by ${selectedTagIds.length} tag${selectedTagIds.length > 1 ? 's' : ''}`
+                : "Discover and explore your articles"
             }
           </p>
         </div>
@@ -66,25 +76,35 @@ export default function Articles() {
         </Button>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground size-4" />
-        <Input
-          placeholder="Search articles by title, content, or tags..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 pr-4"
+      {/* Search and Filter Bar */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        {/* Search Bar */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground size-4" />
+          <Input
+            placeholder="Search articles by title, content, or tags..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 pr-4"
+          />
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearSearch}
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0"
+            >
+              ×
+            </Button>
+          )}
+        </div>
+
+        {/* Tag Filter */}
+        <TagFilter
+          selectedTagIds={selectedTagIds}
+          onTagsChange={handleTagsChange}
+          className="w-full sm:w-auto"
         />
-        {searchTerm && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearSearch}
-            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0"
-          >
-            ×
-          </Button>
-        )}
       </div>
 
       {/* Loading State */}
@@ -130,24 +150,40 @@ export default function Articles() {
                 <FileText className="size-12 text-muted-foreground mx-auto" />
                 <div>
                   <h3 className="text-lg font-semibold text-foreground">
-                    {debouncedSearchTerm ? "No articles found" : "No articles yet"}
+                    {debouncedSearchTerm
+                      ? "No articles found"
+                      : selectedTagIds.length > 0
+                        ? "No articles with selected tags"
+                        : "No articles yet"
+                    }
                   </h3>
                   <p className="text-muted-foreground">
                     {debouncedSearchTerm
                       ? "Try adjusting your search terms or browse all articles."
-                      : "Get started by creating your first article."
+                      : selectedTagIds.length > 0
+                        ? "Try selecting different tags or create a new article with these tags."
+                        : "Get started by creating your first article."
                     }
                   </p>
                 </div>
-                {!debouncedSearchTerm && (
+                {!debouncedSearchTerm && selectedTagIds.length === 0 && (
                   <Button asChild>
                     <Link href="/articles/create">Create Your First Article</Link>
                   </Button>
                 )}
-                {debouncedSearchTerm && (
-                  <Button variant="outline" onClick={clearSearch}>
-                    View All Articles
-                  </Button>
+                {(debouncedSearchTerm || selectedTagIds.length > 0) && (
+                  <div className="flex gap-2">
+                    {debouncedSearchTerm && (
+                      <Button variant="outline" onClick={clearSearch}>
+                        Clear Search
+                      </Button>
+                    )}
+                    {selectedTagIds.length > 0 && (
+                      <Button variant="outline" onClick={() => handleTagsChange([])}>
+                        Clear Filters
+                      </Button>
+                    )}
+                  </div>
                 )}
               </CardContent>
             </Card>

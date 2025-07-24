@@ -1,4 +1,5 @@
 import { HttpClient } from "../http-client";
+import { IUser } from "./user-repository";
 
 export interface ITag {
   id: string;
@@ -9,12 +10,10 @@ export interface ITag {
   createdAt: string;
 }
 
-export interface IUser {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  createdAt: string;
+export enum ArticleStatus {
+  DRAFT,
+  PUBLISHED,
+  ARCHIVED
 }
 
 export interface IArticle {
@@ -23,7 +22,7 @@ export interface IArticle {
   content: any; // JSON content
   excerpt: string;
   slug: string;
-  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  status: ArticleStatus;
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -32,34 +31,19 @@ export interface IArticle {
   tags: { tag: ITag }[];
 }
 
-export interface ICreateArticle {
-  title: string;
-  content: any;
-  excerpt?: string;
-  slug?: string;
-  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-  tagIds?: string[];
-}
+export type ICreateArticle = Omit<IArticle, "id" | "createdAt" | "updatedAt" | "publishedAt">
 
-export interface IUpdateArticle {
-  title?: string;
-  content?: any;
-  excerpt?: string;
-  slug?: string;
-  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-  tagIds?: string[];
-}
-
+export interface IPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+};
 export interface IPaginationResponse<T> {
   data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
+  pagination: IPagination;
 }
 
 interface IArticleApiResponse {
@@ -71,37 +55,43 @@ interface IArticleApiResponse {
 interface IArticlesApiResponse {
   success: boolean;
   data: IArticle[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
+  pagination: IPagination;
 }
 
 export class ArticleRepository {
-  constructor(private client: HttpClient) {}
+  constructor(private client: HttpClient) { }
 
-  async getAllArticles(page: number = 1, limit: number = 10, status?: string): Promise<IPaginationResponse<IArticle>> {
+  async getUserArticles(page: number = 1, limit: number = 10, tagIds?: string[]): Promise<IPaginationResponse<IArticle>> {
     const params: any = { page, limit };
-    if (status) params.status = status;
-    
-    const res = await this.client.get<IArticlesApiResponse>('/articles', params);
-    return {
-      data: res.data,
-      pagination: res.pagination
-    };
-  }
-
-  async getUserArticles(page: number = 1, limit: number = 10): Promise<IPaginationResponse<IArticle>> {
-    const params = { page, limit };
+    if (tagIds && tagIds.length > 0) {
+      params.tagIds = tagIds.join(',');
+    }
     const res = await this.client.get<IArticlesApiResponse>('/articles/my-articles', params);
-    return {
-      data: res.data,
-      pagination: res.pagination
-    };
+    const articlesDTO = {
+      data: res.data.map(item => ({
+        id: item.id,
+        title: item.title,
+        content: item.content,
+        slug: item.slug,
+        excerpt: item.excerpt,
+        status: item.status,
+        userId: item.userId,
+        user: item.user,
+        tags: item.tags,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        publishedAt: item.publishedAt
+      })),
+      pagination: {
+        page: res.pagination.page,
+        limit: res.pagination.limit,
+        total: res.pagination.total,
+        totalPages: res.pagination.totalPages,
+        hasNext: res.pagination.hasNext,
+        hasPrev: res.pagination.hasPrev
+      }
+    }
+    return articlesDTO;
   }
 
   async searchArticles(query: string, page: number = 1, limit: number = 10): Promise<IPaginationResponse<IArticle>> {
@@ -137,23 +127,8 @@ export class ArticleRepository {
     return res.data;
   }
 
-  async updateArticle(id: string, data: IUpdateArticle): Promise<IArticle> {
-    const res = await this.client.put<IArticleApiResponse>(`/articles/${id}`, data);
-    return res.data;
-  }
-
   async deleteArticle(id: string): Promise<void> {
     await this.client.delete(`/articles/${id}`);
-  }
-
-  async publishArticle(id: string): Promise<IArticle> {
-    const res = await this.client.post<IArticleApiResponse>(`/articles/${id}/publish`, {});
-    return res.data;
-  }
-
-  async archiveArticle(id: string): Promise<IArticle> {
-    const res = await this.client.post<IArticleApiResponse>(`/articles/${id}/archive`, {});
-    return res.data;
   }
 
   async summarizeArticle(id: string): Promise<{ summary: string }> {

@@ -12,7 +12,7 @@ export const useRegistraion = (options?: UseMutationOptions<IUser, unknown, IReg
     return api.useMutation(authRepository.register.bind(authRepository), {
         onSuccess: (data) => {
             toast.success("Registration successful");
-            router.push('/')
+            router.push('/login')
         },
         onError: (error) => {
             toast.error(error instanceof Error ? error.message : 'Login Failed');
