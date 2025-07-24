@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,15 +11,15 @@ import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { TagSelector } from "@/components/ui/tag-selector";
 import { useCreateArticle } from "@/components/hooks/api/articles/use-create-article";
+import { ArticleStatus } from "@/lib/api/repositories/article-repository";
 
 export default function CreateArticle() {
-  const router = useRouter();
   const [formData, setFormData] = useState({
     title: "",
     content: "",
     excerpt: "",
     slug: "",
-    status: "PUBLISHED" as "DRAFT" | "PUBLISHED" | "ARCHIVED",
+    status: ArticleStatus.PUBLISHED,
     tagIds: [] as string[],
   });
 

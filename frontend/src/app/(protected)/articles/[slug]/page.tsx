@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useParams, useRouter } from "next/navigation";
@@ -98,7 +99,7 @@ export default function ArticleDetails() {
         <CardContent className="text-center space-y-4">
           <h3 className="text-lg font-semibold text-foreground">Article not found</h3>
           <p className="text-muted-foreground">
-            The article you're looking for doesn't exist or has been removed.
+            The article you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
           <Button asChild>
             <Link href="/articles">Back to Articles</Link>

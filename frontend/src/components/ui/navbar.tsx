@@ -38,7 +38,10 @@ export function Navbar() {
   const pathname = usePathname()
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken")
+    if(typeof window !== 'undefined'){
+
+      localStorage.removeItem("accessToken")
+    }
     logout()
     toast.success("Logged out successfully")
     router.push("/login")

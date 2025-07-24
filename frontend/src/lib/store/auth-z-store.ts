@@ -1,3 +1,5 @@
+"use client"
+
 import { create } from 'zustand';
 import { persist, devtools } from 'zustand/middleware';
 import { IAuth } from '../api/repositories/auth-repository';

@@ -177,7 +177,7 @@ export function TagSelector({
                 ) : (
                   <Plus className="size-4 mr-2" />
                 )}
-                Create "{debouncedSearchTerm}"
+                Create &rdquo;{debouncedSearchTerm}&quot;
               </Button>
             )}
 

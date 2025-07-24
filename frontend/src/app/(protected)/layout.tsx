@@ -2,11 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/ui/navbar";
+import useLocalStorage from "@/components/hooks/store/use-local-storage";
+import useHasMounted from "@/components/hooks/has-mounted";
 
 export default function ProtectedLayout({children}: {children: React.ReactNode;}){
-    const token = localStorage.getItem("accessToken");
+    const hasMounted = useHasMounted();
+    const [accessToken] = useLocalStorage('accessToken', '');
     const router = useRouter();
-    if(!token){
+    if(!hasMounted) return null;
+    if(!accessToken){
         router.push("/login");
         return;
     }
