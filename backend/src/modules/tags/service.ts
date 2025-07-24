@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { BaseRepository } from '../base-repo';
 import { 
   CreateTag, 
@@ -297,7 +297,7 @@ export class TagService implements ITagService {
 
   async addTagToArticle(articleId: string, tagId: string, userId: string): Promise<void> {
     try {
-      await this.db.$transaction(async (tx) => {
+      await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         // Check if article exists and belongs to user
         const article = await tx.article.findFirst({
           where: { id: articleId, userId }
@@ -345,7 +345,7 @@ export class TagService implements ITagService {
 
   async removeTagFromArticle(articleId: string, tagId: string, userId: string): Promise<void> {
     try {
-      await this.db.$transaction(async (tx) => {
+      await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         // Check if article exists and belongs to user
         const article = await tx.article.findFirst({
           where: { id: articleId, userId }

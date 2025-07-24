@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { BaseRepository } from '../base-repo';
 import { 
   CreateCredential, 
@@ -100,7 +100,7 @@ export class CredentialService implements ICredentialService {
 
   async createCredential(body: ICredentialRequestBody): Promise<IUser> {
     try {
-      return await this.db.$transaction(async (tx) => {
+      return await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         const existingUser = await tx.user.findUnique({
           where: { email: body.email }
         });
@@ -143,7 +143,7 @@ export class CredentialService implements ICredentialService {
     };
   }> {
     try {
-      return await this.db.$transaction(async (tx) => {
+      return await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         const user = await tx.user.findUnique({
           where: { email: args.email },
           include: { credential: true }
@@ -200,7 +200,7 @@ export class CredentialService implements ICredentialService {
     };
   }> {
     try {
-      return await this.db.$transaction(async (tx) => {
+      return await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         const user = await tx.user.findUnique({
           where: { email: args.email },
           include: { credential: true }
@@ -257,7 +257,7 @@ export class CredentialService implements ICredentialService {
 
   async deleteCredential(userId: string): Promise<void> {
     try {
-      await this.db.$transaction(async (tx) => {
+      await this.db.$transaction(async (tx: Prisma.TransactionClient) => {
         // Delete credential first (due to foreign key constraint)
         await tx.credential.delete({
           where: { userId }
