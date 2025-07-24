@@ -17,13 +17,12 @@ export default function Articles() {
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const { searchTerm, debouncedSearchTerm, setSearchTerm } = useDebouncedSearch("", 500);
 
-  // Use search query if there's a debounced search term, otherwise get all articles
   const {
     data: articlesData,
     isLoading: isLoadingArticles,
     error: articlesError
-  } = useGetUserArticles(currentPage, 12, selectedTagIds, {
-    enabled: !debouncedSearchTerm
+  } = useGetUserArticles(currentPage, 5, selectedTagIds, {
+    enabled: !debouncedSearchTerm,
   });
 
   const {
@@ -34,7 +33,6 @@ export default function Articles() {
     enabled: !!debouncedSearchTerm
   });
 
-  // Determine which data to use
   const data = debouncedSearchTerm ? searchData : articlesData;
   const isLoading = debouncedSearchTerm ? isSearching : isLoadingArticles;
   const error = debouncedSearchTerm ? searchError : articlesError;
@@ -50,7 +48,7 @@ export default function Articles() {
 
   const handleTagsChange = (tagIds: string[]) => {
     setSelectedTagIds(tagIds);
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1);
   };
 
   return (

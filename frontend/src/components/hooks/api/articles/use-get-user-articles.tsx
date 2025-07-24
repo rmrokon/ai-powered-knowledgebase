@@ -11,10 +11,9 @@ export const useGetUserArticles = (
   options?: Omit<UseQueryOptions<IPaginationResponse<IArticle>>, 'queryKey' | 'queryFn'>
 ) => {
   return api.useQuery(
-    ['user-articles'],
+    ['user-articles', page, limit],
     () => articleRepository.getUserArticles(page, limit, tagIds),
     {
-    //   staleTime: 5 * 60 * 1000, // 5 minutes
       ...options
     }
   );

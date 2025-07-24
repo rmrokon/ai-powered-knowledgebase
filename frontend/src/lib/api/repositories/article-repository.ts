@@ -11,9 +11,9 @@ export interface ITag {
 }
 
 export enum ArticleStatus {
-  DRAFT,
-  PUBLISHED,
-  ARCHIVED
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  ARCHIVED = 'ARCHIVED'
 }
 
 export interface IArticle {
@@ -61,7 +61,7 @@ interface IArticlesApiResponse {
 export class ArticleRepository {
   constructor(private client: HttpClient) { }
 
-  async getUserArticles(page: number = 1, limit: number = 10, tagIds?: string[]): Promise<IPaginationResponse<IArticle>> {
+  async getUserArticles(page: number, limit: number, tagIds?: string[]): Promise<IPaginationResponse<IArticle>> {
     const params: any = { page, limit };
     if (tagIds && tagIds.length > 0) {
       params.tagIds = tagIds.join(',');

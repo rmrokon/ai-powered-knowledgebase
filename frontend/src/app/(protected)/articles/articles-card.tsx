@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState } from "react";
 import { ArticleSummaryModal } from "@/components/ui/article-summary-modal";
+import { ArticleStatus } from "@/lib/api/repositories/article-repository";
 
 interface Tag {
   id: string;
@@ -55,11 +56,11 @@ export default function ArticleCard({
 
     const getStatusColor = (status?: string) => {
         switch (status) {
-            case 'PUBLISHED':
+            case ArticleStatus.PUBLISHED:
                 return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-            case 'DRAFT':
+            case ArticleStatus.DRAFT:
                 return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-            case 'ARCHIVED':
+            case ArticleStatus.ARCHIVED:
                 return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
             default:
                 return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
@@ -75,7 +76,7 @@ export default function ArticleCard({
     return (
         <>
             <div className="relative group">
-                <Link href={`/articles/${slug || id}`} className="block">
+                <Link href={`/articles/${slug || id}`} className="block h-full">
                     <Card className={cn(
                         "h-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] cursor-pointer border-border/50 hover:border-primary/20",
                         className
@@ -138,10 +139,9 @@ export default function ArticleCard({
                 </Link>
 
                 {/* Summarize Button - appears on hover */}
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
-                        variant="secondary"
-                        size="sm"
+                        size="lg"
                         onClick={handleSummarizeClick}
                         className="h-8 px-2 text-xs shadow-md"
                     >
